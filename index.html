@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A detailed weather dashboard with current conditions, hourly weather, and a seven-day forecast.">
+  <title>Atmos Weather</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Atmos Weather home">
+        <span class="brand-mark">A</span>
+        <span>atmos<span class="brand-dot">.</span></span>
+      </a>
+      <div class="topbar-meta">
+        <span class="live-dot"></span>
+        <span>Live conditions</span>
+        <button class="unit-toggle" id="unitToggle" type="button" aria-label="Switch temperature units">°F <span>/</span> °C</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Your daily atmosphere report</p>
+          <h1>Read the sky<br><em>before you go.</em></h1>
+          <p class="hero-description">Hyperlocal conditions, hourly rhythm, and the week ahead in one clear view.</p>
+        </div>
+        <form class="search-panel" id="searchForm">
+          <label for="locationInput">Find anywhere in the world</label>
+          <div class="search-row">
+            <input id="locationInput" name="location" type="search" placeholder="Type a city, state, or country" autocomplete="off" required>
+            <button class="search-button" type="submit" aria-label="Search location">Search <span>↗</span></button>
+          </div>
+          <div class="location-suggestions" id="locationSuggestions" role="listbox" aria-label="Location suggestions"></div>
+          <button class="location-button" id="locationButton" type="button"><span>◎</span> Use my location</button>
+          <div class="region-picker">
+            <label for="regionSelect">Quick picks</label>
+            <select id="regionSelect">
+              <option value="">Select a region...</option>
+              <optgroup label="United States states">
+                <option value="michigan">Michigan (MI)</option>
+                <option value="california">California (CA)</option>
+                <option value="florida">Florida (FL)</option>
+                <option value="illinois">Illinois (IL)</option>
+                <option value="new-york">New York (NY)</option>
+                <option value="texas">Texas (TX)</option>
+                <option value="washington">Washington (WA)</option>
+              </optgroup>
+              <optgroup label="Countries">
+                <option value="united-states">United States (US)</option>
+                <option value="canada">Canada</option>
+                <option value="mexico">Mexico</option>
+                <option value="united-kingdom">United Kingdom (UK)</option>
+                <option value="australia">Australia</option>
+                <option value="india">India</option>
+                <option value="japan">Japan</option>
+              </optgroup>
+            </select>
+          </div>
+          <p class="search-status" id="searchStatus" role="status"></p>
+        </form>
+      </section>
+
+      <section class="dashboard" aria-live="polite">
+        <div class="location-heading">
+          <div>
+            <p class="section-kicker">Currently in</p>
+            <h2 id="placeName">Detroit, Michigan</h2>
+            <p id="localTime">Loading local time...</p>
+          </div>
+          <div class="updated"><span class="live-dot"></span> <span id="updatedText">Updating now</span></div>
+        </div>
+
+        <div class="current-layout">
+          <article class="current-card">
+            <div class="current-topline">
+              <span class="weather-symbol" id="currentIcon">☀</span>
+              <div>
+                <p class="section-kicker">Right now</p>
+                <p class="condition" id="currentCondition">Clear skies</p>
+              </div>
+            </div>
+            <div class="temperature"><span id="currentTemp">--</span><sup id="currentUnit">°F</sup></div>
+            <p class="feels-like">Feels like <strong id="feelsLike">--</strong></p>
+            <div class="current-stats">
+              <div><span>High / Low</span><strong id="highLow">-- / --</strong></div>
+              <div><span>Precipitation</span><strong id="currentPrecip">--</strong></div>
+              <div><span>Wind</span><strong id="currentWind">--</strong></div>
+            </div>
+          </article>
+
+          <div class="metrics-grid">
+            <article class="metric-card"><span class="metric-label">Humidity</span><strong id="humidity">--</strong><span class="metric-unit">relative humidity</span><div class="metric-line"><i id="humidityBar"></i></div></article>
+            <article class="metric-card"><span class="metric-label">Wind direction</span><strong id="windDirection">--</strong><span class="metric-unit" id="windSpeed">--</span><span class="compass-arrow" id="windArrow">↑</span></article>
+            <article class="metric-card"><span class="metric-label">UV index</span><strong id="uvIndex">--</strong><span class="metric-unit" id="uvLabel">low exposure</span><div class="uv-scale"><i></i><i></i><i></i><i></i><i></i></div></article>
+            <article class="metric-card"><span class="metric-label">Visibility</span><strong id="visibility">--</strong><span class="metric-unit">in your area</span></article>
+          </div>
+        </div>
+
+        <section class="forecast-section">
+          <div class="section-heading"><div><p class="section-kicker">Today by the hour</p><h3>Hourly forecast</h3></div><span class="section-note">Next 24 hours</span></div>
+          <div class="hourly-scroll" id="hourlyForecast"></div>
+        </section>
+
+        <section class="forecast-section week-section">
+          <div class="section-heading"><div><p class="section-kicker">The outlook</p><h3>Seven-day forecast</h3></div><span class="section-note" id="forecastRange">This week</span></div>
+          <div class="daily-list" id="dailyForecast"></div>
+        </section>
+      </section>
+    </main>
+    <footer><span>Atmos Weather</span><span>Data from Open-Meteo</span></footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
