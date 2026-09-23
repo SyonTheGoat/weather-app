@@ -37,6 +37,38 @@ const regionAliases = {
 const $ = (selector) => document.querySelector(selector);
 const fahrenheit = () => state.unit === 'fahrenheit';
 let suggestionRequest = 0;
+const STORAGE_KEY = 'atmos-weather-locations';
+
+function readSavedLocations() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function locationKey(location) {
+  return `${Number(location.latitude).toFixed(3)},${Number(location.longitude).toFixed(3)}`;
+}
+
+function saveLocationSearch(location) {
+  const saved = readSavedLocations();
+  const key = locationKey(location);
+  const existing = saved.find((entry) => entry.key === key);
+  if (existing) {
+    existing.count += 1;
+    existing.location = location;
+  } else {
+    saved.push({ key, count: 1, location });
+  }
+  saved.sort((first, second) => second.count - first.count);
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(saved.slice(0, 20))); } catch { /* Storage may be unavailable. */ }
+}
+
+function getMostSearchedLocation() {
+  return readSavedLocations()[0]?.location || state.location;
+}
 
 const weatherTypes = {
   0: ['Clear sky', '☀'], 1: ['Mainly clear', '◒'], 2: ['Partly cloudy', '◒'], 3: ['Overcast', '☁'],
@@ -140,10 +172,11 @@ function renderDaily(data) {
   setText('#forecastRange', `${shortDate(data.daily.time[0])} – ${shortDate(data.daily.time[6])}`);
 }
 
-async function loadLocation(location, { silent = false } = {}) {
+async function loadLocation(location, { silent = false, record = !silent } = {}) {
   if (!silent) setText('#searchStatus', 'Loading conditions...');
   try {
     const data = await fetchWeather(location); state.location = location; state.weather = data;
+    if (record) saveLocationSearch(location);
     renderCurrent(data); renderHourly(data); renderDaily(data); setText('#searchStatus', '');
   } catch (error) { if (!silent) setText('#searchStatus', error.message); }
 }
@@ -192,7 +225,7 @@ $('#regionSelect').addEventListener('change', async (event) => {
   if (region) await loadLocation(region);
 });
 
-loadLocation(state.location);
+loadLocation(getMostSearchedLocation(), { record: false });
 
 let refreshInFlight = false;
 setInterval(async () => {
