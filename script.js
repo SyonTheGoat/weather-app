@@ -102,12 +102,21 @@ function dayLabel(iso) { return new Intl.DateTimeFormat(undefined, { weekday: 'l
 function shortDate(iso) { return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: state.weather?.timezone || state.location.timezone }).format(new Date(`${iso}T12:00:00`)); }
 function setText(selector, value) { const element = $(selector); if (element) element.textContent = value; }
 
+async function readJson(response, errorMessage) {
+  const body = await response.text();
+  try {
+    return JSON.parse(body);
+  } catch {
+    throw new Error(errorMessage);
+  }
+}
+
 async function searchLocation(query) {
   const alias = regionAliases[query.trim().toLowerCase()];
   if (alias) return alias;
   const response = await fetch(`${GEOCODING_API}?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
   if (!response.ok) throw new Error('Could not search for that place.');
-  const data = await response.json();
+  const data = await readJson(response, 'The location service returned an invalid response.');
   if (!data.results?.length) throw new Error('No matching place found. Try a nearby city.');
   return data.results[0];
 }
@@ -115,7 +124,7 @@ async function searchLocation(query) {
 async function findLocations(query) {
   const response = await fetch(`${GEOCODING_API}?name=${encodeURIComponent(query)}&count=8&language=en&format=json`);
   if (!response.ok) throw new Error('Location search is temporarily unavailable.');
-  return (await response.json()).results || [];
+  return (await readJson(response, 'Location search returned an invalid response.')).results || [];
 }
 
 function hideSuggestions() { $('#locationSuggestions').classList.remove('visible'); $('#locationSuggestions').replaceChildren(); }
@@ -141,7 +150,7 @@ async function fetchWeather(location) {
   });
   const response = await fetch(`${API_BASE}?${params}`);
   if (!response.ok) throw new Error('Weather data is temporarily unavailable.');
-  return response.json();
+  return readJson(response, 'Weather data returned an invalid response.');
 }
 
 function renderCurrent(data) {
