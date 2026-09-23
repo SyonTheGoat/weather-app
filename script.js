@@ -177,6 +177,7 @@ async function loadLocation(location, { silent = false, record = !silent } = {})
   try {
     const data = await fetchWeather(location); state.location = location; state.weather = data;
     if (record) saveLocationSearch(location);
+    $('#locationInput').value = location.name || '';
     renderCurrent(data); renderHourly(data); renderDaily(data); setText('#searchStatus', '');
   } catch (error) { if (!silent) setText('#searchStatus', error.message); }
 }
