@@ -70,6 +70,18 @@ function getMostSearchedLocation() {
   return readSavedLocations()[0]?.location || state.location;
 }
 
+async function getUrlLocation() {
+  const query = new URLSearchParams(window.location.search).get('location');
+  if (!query) return null;
+  try { return await searchLocation(query); } catch { return null; }
+}
+
+function updateLocationUrl(location) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('location', location.name);
+  window.history.replaceState({}, '', url);
+}
+
 const weatherTypes = {
   0: ['Clear sky', '☀'], 1: ['Mainly clear', '◒'], 2: ['Partly cloudy', '◒'], 3: ['Overcast', '☁'],
   45: ['Foggy', '≋'], 48: ['Rime fog', '≋'], 51: ['Light drizzle', '☂'], 53: ['Drizzle', '☂'], 55: ['Heavy drizzle', '☂'],
@@ -176,7 +188,7 @@ async function loadLocation(location, { silent = false, record = !silent } = {})
   if (!silent) setText('#searchStatus', 'Loading conditions...');
   try {
     const data = await fetchWeather(location); state.location = location; state.weather = data;
-    if (record) saveLocationSearch(location);
+    if (record) { saveLocationSearch(location); updateLocationUrl(location); }
     $('#locationInput').value = location.name || '';
     renderCurrent(data); renderHourly(data); renderDaily(data); setText('#searchStatus', '');
   } catch (error) { if (!silent) setText('#searchStatus', error.message); }
@@ -226,7 +238,10 @@ $('#regionSelect').addEventListener('change', async (event) => {
   if (region) await loadLocation(region);
 });
 
-loadLocation(getMostSearchedLocation(), { record: false });
+(async () => {
+  const urlLocation = await getUrlLocation();
+  await loadLocation(urlLocation || getMostSearchedLocation(), { record: false });
+})();
 
 let refreshInFlight = false;
 setInterval(async () => {
